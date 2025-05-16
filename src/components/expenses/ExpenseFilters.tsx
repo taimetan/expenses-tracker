@@ -14,7 +14,7 @@ interface ExpenseFiltersProps {
   };
   showFilters: boolean;
   setFilters: (filters: any) => void;
-  clearFilter: (filterName: string) => void;
+  clearFilter: (filterName: "category" | "startDate" | "endDate" | "minAmount" | "maxAmount" | "searchText") => void;
   applyFilters: () => void;
   resetFilters: () => void;
   setShowFilters: (show: boolean) => void;
