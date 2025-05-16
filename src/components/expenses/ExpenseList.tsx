@@ -15,7 +15,7 @@ interface ExpenseListProps {
   activeFiltersCount: number;
 }
 
-export default function ExpenseList({
+export default function   ExpenseList({
   loading,
   filteredExpenses,
   currentPage,

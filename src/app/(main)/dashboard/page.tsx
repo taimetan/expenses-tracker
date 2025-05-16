@@ -234,6 +234,7 @@ export default function DashboardPage() {
           setTimeRange={setTimeRange}
           currentMonth={currentMonth}
           changeMonth={changeMonth}
+          onExport={handleExport}
         />
 
         <main className="flex-1 p-6">
@@ -245,7 +246,6 @@ export default function DashboardPage() {
 
           <DashboardCharts
             expensesByDay={expensesByDay}
-            onExport={handleExport}
           />
 
           <DashboardBudgets budgetAlerts={budgetAlerts} />

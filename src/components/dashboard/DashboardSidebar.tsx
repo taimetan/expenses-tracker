@@ -1,6 +1,6 @@
 'use client';
 
-import { FaChartBar, FaCalendarAlt, FaFilter, FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaChartBar, FaCalendarAlt, FaFilter, FaTimes, FaChevronLeft, FaChevronRight, FaFileExcel } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface DashboardSidebarProps {
@@ -10,6 +10,7 @@ interface DashboardSidebarProps {
   setTimeRange: (range: "week" | "month" | "year") => void;
   currentMonth: Date;
   changeMonth: (months: number) => void;
+  onExport?: () => void;
 }
 
 export default function DashboardSidebar({
@@ -19,6 +20,7 @@ export default function DashboardSidebar({
   setTimeRange,
   currentMonth,
   changeMonth,
+  onExport,
 }: DashboardSidebarProps) {
   // Mobile sidebar animation variants
   const sidebarVariants = {
@@ -42,6 +44,102 @@ export default function DashboardSidebar({
     }
   };
 
+  const renderSidebarContent = () => (
+    <div className="p-6 space-y-8">
+      {/* Time Controls */}
+      <div className="space-y-4">
+        <div className="flex items-center space-x-2 text-gray-800">
+          <FaCalendarAlt className="text-indigo-500" />
+          <h2 className="font-semibold">Thời gian</h2>
+        </div>
+        <div className="bg-gray-50 p-3 rounded-xl">
+          <div className="flex items-center justify-between bg-white shadow-sm rounded-lg p-2">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => changeMonth(-1)}
+              className="p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+            >
+              <FaChevronLeft className="w-4 h-4" />
+            </motion.button>
+            <span className="font-medium text-gray-700">
+              {currentMonth.toLocaleDateString("vi-VN", {
+                month: "long",
+                year: "numeric",
+              })}
+            </span>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => changeMonth(1)}
+              className="p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+            >
+              <FaChevronRight className="w-4 h-4" />
+            </motion.button>
+          </div>
+        </div>
+      </div>
+
+      {/* Time Range Filter */}
+      <div className="space-y-4">
+        <div className="flex items-center space-x-2 text-gray-800">
+          <FaFilter className="text-indigo-500" />
+          <h2 className="font-semibold">Phạm vi</h2>
+        </div>
+        <div className="space-y-2">
+          {[
+            { value: "week", label: "Tuần này" },
+            { value: "month", label: "Tháng này" },
+            { value: "year", label: "Năm này" }
+          ].map((range) => (
+            <motion.button
+              key={range.value}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setTimeRange(range.value as "week" | "month" | "year")}
+              className={`
+                w-full px-4 py-3 rounded-xl flex items-center justify-between
+                transition-all duration-200 group
+                ${timeRange === range.value
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md"
+                  : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                }
+              `}
+            >
+              <span className="font-medium">{range.label}</span>
+              {timeRange === range.value && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="w-2 h-2 rounded-full bg-white"
+                />
+              )}
+            </motion.button>
+          ))}
+        </div>
+      </div>
+
+      {/* Export Button */}
+      {onExport && (
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2 text-gray-800">
+            <FaFileExcel className="text-indigo-500" />
+            <h2 className="font-semibold">Xuất dữ liệu</h2>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onExport}
+            className="w-full px-4 py-3 rounded-xl bg-green-500 hover:bg-green-600 text-white font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+          >
+            <FaFileExcel className="w-4 h-4" />
+            <span>Xuất Excel</span>
+          </motion.button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <>
       {/* Desktop Sidebar */}
@@ -60,80 +158,7 @@ export default function DashboardSidebar({
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-8">
-            {/* Time Controls */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2 text-gray-800">
-                <FaCalendarAlt className="text-indigo-500" />
-                <h2 className="font-semibold">Thời gian</h2>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-xl">
-                <div className="flex items-center justify-between bg-white shadow-sm rounded-lg p-2">
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => changeMonth(-1)}
-                    className="p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
-                  >
-                    <FaChevronLeft className="w-4 h-4" />
-                  </motion.button>
-                  <span className="font-medium text-gray-700">
-                    {currentMonth.toLocaleDateString("vi-VN", {
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </span>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => changeMonth(1)}
-                    className="p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
-                  >
-                    <FaChevronRight className="w-4 h-4" />
-                  </motion.button>
-                </div>
-              </div>
-            </div>
-
-            {/* Time Range Filter */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2 text-gray-800">
-                <FaFilter className="text-indigo-500" />
-                <h2 className="font-semibold">Phạm vi</h2>
-              </div>
-              <div className="space-y-2">
-                {[
-                  { value: "week", label: "Tuần này" },
-                  { value: "month", label: "Tháng này" },
-                  { value: "year", label: "Năm này" }
-                ].map((range) => (
-                  <motion.button
-                    key={range.value}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setTimeRange(range.value as "week" | "month" | "year")}
-                    className={`
-                      w-full px-4 py-3 rounded-xl flex items-center justify-between
-                      transition-all duration-200 group
-                      ${timeRange === range.value
-                        ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md"
-                        : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-                      }
-                    `}
-                  >
-                    <span className="font-medium">{range.label}</span>
-                    {timeRange === range.value && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="w-2 h-2 rounded-full bg-white"
-                      />
-                    )}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-          </div>
+          {renderSidebarContent()}
         </div>
       </aside>
 
@@ -179,81 +204,8 @@ export default function DashboardSidebar({
                   </div>
                 </div>
 
-                {/* Content - Reuse the same content as desktop */}
-                <div className="p-6 space-y-8">
-                  {/* Time Controls */}
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2 text-gray-800">
-                      <FaCalendarAlt className="text-indigo-500" />
-                      <h2 className="font-semibold">Thời gian</h2>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-xl">
-                      <div className="flex items-center justify-between bg-white shadow-sm rounded-lg p-2">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => changeMonth(-1)}
-                          className="p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
-                        >
-                          <FaChevronLeft className="w-4 h-4" />
-                        </motion.button>
-                        <span className="font-medium text-gray-700">
-                          {currentMonth.toLocaleDateString("vi-VN", {
-                            month: "long",
-                            year: "numeric",
-                          })}
-                        </span>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => changeMonth(1)}
-                          className="p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
-                        >
-                          <FaChevronRight className="w-4 h-4" />
-                        </motion.button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Time Range Filter */}
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2 text-gray-800">
-                      <FaFilter className="text-indigo-500" />
-                      <h2 className="font-semibold">Phạm vi</h2>
-                    </div>
-                    <div className="space-y-2">
-                      {[
-                        { value: "week", label: "Tuần này" },
-                        { value: "month", label: "Tháng này" },
-                        { value: "year", label: "Năm này" }
-                      ].map((range) => (
-                        <motion.button
-                          key={range.value}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setTimeRange(range.value as "week" | "month" | "year")}
-                          className={`
-                            w-full px-4 py-3 rounded-xl flex items-center justify-between
-                            transition-all duration-200 group
-                            ${timeRange === range.value
-                              ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md"
-                              : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-                            }
-                          `}
-                        >
-                          <span className="font-medium">{range.label}</span>
-                          {timeRange === range.value && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="w-2 h-2 rounded-full bg-white"
-                            />
-                          )}
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                {/* Content */}
+                {renderSidebarContent()}
               </div>
             </motion.aside>
           </>
