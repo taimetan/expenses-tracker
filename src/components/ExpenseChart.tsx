@@ -1,6 +1,6 @@
 'use client';
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, TooltipProps } from 'recharts';
 
 interface ChartData {
   name: string;
@@ -35,6 +35,21 @@ const chartConfig = {
   ]
 } as const;
 
+const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+  if (!active || !payload || !payload.length) return null;
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-2 text-sm">
+      <p className="font-medium text-gray-900">{label}</p>
+      {payload.map((entry, index) => (
+        <p key={index} className="text-gray-600">
+          {entry.value?.toLocaleString('vi-VN')} ₫
+        </p>
+      ))}
+    </div>
+  );
+};
+
 export default function ExpenseChart({ data, type = 'monthly' }: ExpenseChartProps) {
   const chartBars = useMemo(() => {
     const config = chartConfig[type];
@@ -63,17 +78,7 @@ export default function ExpenseChart({ data, type = 'monthly' }: ExpenseChartPro
             tickLine={{ stroke: '#e5e7eb' }}
             fontSize={12}
           />
-          <Tooltip 
-            formatter={(value: number) => [`${value.toLocaleString('vi-VN')} ₫`, '']}
-            contentStyle={{
-              backgroundColor: 'white',
-              border: '1px solid #e5e7eb',
-              borderRadius: '0.5rem',
-              padding: '0.5rem',
-              fontSize: '0.875rem',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-            }}
-          />
+          <Tooltip content={<CustomTooltip />} />
           <Legend 
             wrapperStyle={{
               paddingTop: '1rem'
