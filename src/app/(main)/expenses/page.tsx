@@ -6,9 +6,7 @@ import ExpenseForm from "@/src/components/ExpenseForm";
 import { getExpenses } from "@/src/services/expenseService";
 import { Expense } from "@/src/models/expense";
 import { useAuth } from "@/src/contexts/AuthContext";
-import ExpenseFilters from "@/src/components/expenses/ExpenseFilters";
-import ExpenseList from "@/src/components/expenses/ExpenseList";
-import ExpenseSummary from "@/src/components/expenses/ExpenseSummary";
+import ExpenseDashboard from "@/src/components/expenses/ExpenseDashboard";
 
 export default function ExpensesPage() {
   const { user } = useAuth();
@@ -139,41 +137,24 @@ export default function ExpensesPage() {
             </div>
 
             {/* Phần lịch sử chi tiêu */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-gray-600 text-xl font-semibold mb-4">
-                Lịch sử chi tiêu
-              </h2>
-
-              <ExpenseFilters
-                filters={filters}
-                showFilters={showFilters}
-                setFilters={setFilters}
-                clearFilter={clearFilter}
-                applyFilters={applyFilters}
-                resetFilters={resetFilters}
-                setShowFilters={setShowFilters}
-                activeFiltersCount={activeFiltersCount}
-              />
-
-              <ExpenseSummary
-                totalAmount={totalAmount}
-                currentPage={currentPage}
-                itemsPerPage={itemsPerPage}
-                totalItems={totalItems}
-              />
-
-              <ExpenseList
-                loading={loading}
-                filteredExpenses={filteredExpenses}
-                currentPage={currentPage}
-                itemsPerPage={itemsPerPage}
-                totalItems={totalItems}
-                totalPages={totalPages}
-                setCurrentPage={setCurrentPage}
-                resetFilters={resetFilters}
-                activeFiltersCount={activeFiltersCount}
-              />
-            </div>
+            <ExpenseDashboard
+              filters={filters}
+              showFilters={showFilters}
+              loading={loading}
+              filteredExpenses={filteredExpenses}
+              currentPage={currentPage}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              totalPages={totalPages}
+              totalAmount={totalAmount}
+              activeFiltersCount={activeFiltersCount}
+              setFilters={setFilters}
+              clearFilter={clearFilter}
+              applyFilters={applyFilters}
+              resetFilters={resetFilters}
+              setShowFilters={setShowFilters}
+              setCurrentPage={setCurrentPage}
+            />
           </div>
         </div>
       </div>
