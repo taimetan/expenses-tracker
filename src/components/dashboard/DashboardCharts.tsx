@@ -49,7 +49,7 @@ export default function DashboardCharts({
         </div>
 
         {hasData ? (
-          <div className="h-[300px]">
+          <div className="h-auto">
             <ExpenseChart
               data={expensesByDay}
               type="daily"
