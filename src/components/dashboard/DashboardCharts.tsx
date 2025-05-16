@@ -24,6 +24,8 @@ export default function DashboardCharts({
     }
   };
 
+  const hasData = expensesByDay.length > 0;
+
   return (
     <motion.div 
       className="mb-6"
@@ -46,12 +48,20 @@ export default function DashboardCharts({
           </div>
         </div>
 
-        <div className="h-[300px]">
-          <ExpenseChart
-            data={expensesByDay}
-            type="daily"
-          />
-        </div>
+        {hasData ? (
+          <div className="h-[300px]">
+            <ExpenseChart
+              data={expensesByDay}
+              type="daily"
+            />
+          </div>
+        ) : (
+          <div className="h-[300px] flex items-center justify-center">
+            <p className="text-gray-500 text-center">
+              Chưa có dữ liệu chi tiêu nào trong khoảng thời gian này
+            </p>
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );

@@ -135,10 +135,10 @@ export default function DashboardPage() {
         'Chi tiêu': total
       });
 
-      await exportToExcel(
+    await exportToExcel(
         exportData,
         `chi-tieu-hang-ngay-${format(currentMonth, "MM-yyyy")}`
-      );
+    );
     } catch (error) {
       console.error("Error exporting data:", error);
     }
