@@ -1,21 +1,21 @@
-import { initializeApp } from "firebase/app";
+// lib/firebase.ts
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+
 const firebaseConfig = {
-    apiKey: "AIzaSyDFCcoL1MqqmzxSLRHYcdaQfPM43ybOtC4",
-    authDomain: "expense-tracker-8c122.firebaseapp.com",
-    projectId: "expense-tracker-8c122",
-    storageBucket: "expense-tracker-8c122.firebasestorage.app",
-    messagingSenderId: "311054054849",
-    appId: "1:311054054849:web:5798b1d3a0e2bc6b41eb40",
-    measurementId: "G-WQL1VW21VZ"
-  };
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+};
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Chỉ initialize 1 lần
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Firebase services
 const auth = getAuth(app);
 const db = getFirestore(app);
 
