@@ -30,7 +30,7 @@ export default function BudgetForm({ onSuccess, showStatus = true }: BudgetFormP
         if (!user) return;
 
         try {
-            setLoading(true);
+            setLoading(true);   
             await addBudget({
                 ...budget,
                 userId: user.uid

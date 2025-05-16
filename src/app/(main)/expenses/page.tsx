@@ -530,11 +530,10 @@ export default function ExpensesPage() {
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <colgroup>
-                        <col className="w-1/6" />{" "}
-                        {/* Ngày - chiếm 1/6 độ rộng */}
-                        <col className="w-2/6" /> {/* Danh mục - chiếm 2/6 */}
-                        <col className="w-2/6" /> {/* Mô tả - chiếm 2/6 */}
-                        <col className="w-1/6" /> {/* Số tiền - chiếm 1/6 */}
+                        <col className="w-1/6" />
+                        <col className="w-2/6" />
+                        <col className="w-2/6" />
+                        <col className="w-1/6" />
                       </colgroup>
                       <thead className="bg-gray-50">
                         <tr>
