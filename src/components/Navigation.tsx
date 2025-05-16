@@ -1,183 +1,155 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useAuthActions } from "@/src/hooks/useAuthActions";
+import { usePathname } from 'next/navigation';
+import { 
+  FaChartLine, 
+  FaWallet, 
+  FaPiggyBank, 
+  FaBell, 
+  FaMoneyBillWave,
+  FaSignOutAlt,
+  FaUserCircle
+} from 'react-icons/fa';
 
 export default function Navigation() {
   const { user } = useAuth();
   const { logout } = useAuthActions();
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
 
+  const navLinks = user ? [
+    { href: '/dashboard', label: 'Dashboard', icon: FaChartLine },
+    { href: '/expenses', label: 'Quản lý chi tiêu', icon: FaWallet },
+    { href: '/budgets', label: 'Ngân sách', icon: FaPiggyBank },
+    { href: '/reminders', label: 'Nhắc nhở', icon: FaBell },
+    { href: '/incomes', label: 'Thu nhập', icon: FaMoneyBillWave },
+  ] : [
+    { href: '/login', label: 'Đăng nhập', icon: FaUserCircle },
+    { href: '/register', label: 'Đăng ký', icon: FaUserCircle },
+  ];
+
   return (
-    <nav className="bg-white shadow-lg">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex justify-between items-center py-4">
+    <nav className={`fixed top-0 left-0 right-0 z-[100] bg-white backdrop-blur-sm transition-all duration-300 ${
+      isScrolled ? 'shadow-lg' : ''
+    }`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center">
-              <span className="font-semibold text-gray-500 text-lg">
+            <Link href="/" className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <FaWallet className="text-white text-xl" />
+              </div>
+              <span className="font-bold text-xl bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
                 Expense Tracker
               </span>
             </Link>
           </div>
 
-          {/* Hamburger Menu (Mobile) */}
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    pathname === link.href
+                      ? 'text-indigo-600 bg-indigo-50'
+                      : 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 mr-2" />
+                  {link.label}
+                </Link>
+              );
+            })}
+            {user && (
+              <button
+                onClick={logout}
+                className="flex items-center px-4 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200"
+              >
+                <FaSignOutAlt className="w-4 h-4 mr-2" />
+                Đăng xuất
+              </button>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
           <div className="md:hidden">
             <button
               onClick={toggleMenu}
-              className="text-gray-500 focus:outline-none"
-              aria-label="Toggle menu"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+              aria-expanded="false"
             >
+              <span className="sr-only">Open main menu</span>
               <svg
-                className="w-6 h-6"
-                fill="none"
+                className="h-6 w-6"
                 stroke="currentColor"
+                fill="none"
                 viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
-                  d={isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16m-7 6h7"}
+                  d={isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
                 />
               </svg>
             </button>
           </div>
-
-          {/* Navigation Links (Desktop) */}
-          <div className="hidden md:flex items-center space-x-3">
-            {user ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-indigo-500 hover:text-white transition duration-300"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/expenses"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-indigo-500 hover:text-white transition duration-300"
-                >
-                  Quản lý chi tiêu
-                </Link>
-                <Link
-                  href="/budgets"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-indigo-500 hover:text-white transition duration-300"
-                >
-                  Ngân sách
-                </Link>
-                <Link
-                  href="/reminders"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-indigo-500 hover:text-white transition duration-300"
-                >
-                  Nhắc nhở
-                </Link>
-                <Link
-                  href="/incomes"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-green-500 hover:text-white transition duration-300"
-                >
-                  Thu nhập
-                </Link>
-                <button
-                  onClick={logout}
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-red-500 hover:text-white transition duration-300"
-                >
-                  Đăng xuất
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-indigo-500 hover:text-white transition duration-300"
-                >
-                  Đăng nhập
-                </Link>
-                <Link
-                  href="/register"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-indigo-500 hover:text-white transition duration-300"
-                >
-                  Đăng ký
-                </Link>
-              </>
-            )}
-          </div>
         </div>
 
-        {/* Mobile Menu (shown when isOpen is true) */}
-        <div className={`md:hidden ${isOpen ? "block" : "hidden"} pb-4`}>
-          <div className="flex flex-col space-y-2">
-            {user ? (
-              <>
+        {/* Mobile menu */}
+        <div className={`md:hidden ${isOpen ? 'block' : 'hidden'}`}>
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              return (
                 <Link
-                  href="/dashboard"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-indigo-500 hover:text-white transition duration-300"
+                  key={link.href}
+                  href={link.href}
+                  className={`flex items-center px-3 py-2 rounded-md text-base font-medium ${
+                    pathname === link.href
+                      ? 'text-indigo-600 bg-indigo-50'
+                      : 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50'
+                  }`}
                   onClick={() => setIsOpen(false)}
                 >
-                  Dashboard
+                  <Icon className="w-5 h-5 mr-3" />
+                  {link.label}
                 </Link>
-                <Link
-                  href="/expenses"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-indigo-500 hover:text-white transition duration-300"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Quản lý chi tiêu
-                </Link>
-                <Link
-                  href="/budgets"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-indigo-500 hover:text-white transition duration-300"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Ngân sách
-                </Link>
-                <Link
-                  href="/reminders"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-indigo-500 hover:text-white transition duration-300"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Nhắc nhở
-                </Link>
-                <Link
-                  href="/incomes"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-green-500 hover:text-white transition duration-300"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Thu nhập
-                </Link>
-                <button
-                  onClick={() => {
-                    logout();
-                    setIsOpen(false);
-                  }}
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-red-500 hover:text-white transition duration-300 text-left"
-                >
-                  Đăng xuất
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-indigo-500 hover:text-white transition duration-300"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Đăng nhập
-                </Link>
-                <Link
-                  href="/register"
-                  className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-indigo-500 hover:text-white transition duration-300"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Đăng ký
-                </Link>
-              </>
+              );
+            })}
+            {user && (
+              <button
+                onClick={() => {
+                  logout();
+                  setIsOpen(false);
+                }}
+                className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50"
+              >
+                <FaSignOutAlt className="w-5 h-5 mr-3" />
+                Đăng xuất
+              </button>
             )}
           </div>
         </div>

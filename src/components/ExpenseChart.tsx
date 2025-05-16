@@ -8,8 +8,17 @@ interface ChartData {
 
 interface ExpenseChartProps {
   data: ChartData[];
-  type?: 'monthly' | 'category';
+  type?: 'monthly' | 'category' | 'daily';
 }
+
+const formatYAxis = (value: number): string => {
+  if (value >= 1000000) {
+    return `${(value / 1000000).toFixed(1)}M`;
+  } else if (value >= 1000) {
+    return `${(value / 1000).toFixed(0)}K`;
+  }
+  return value.toString();
+};
 
 export default function ExpenseChart({ data, type = 'monthly' }: ExpenseChartProps) {
   return (
@@ -18,7 +27,7 @@ export default function ExpenseChart({ data, type = 'monthly' }: ExpenseChartPro
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
-          <YAxis />
+          <YAxis width={60} tickFormatter={formatYAxis} />
           <Tooltip formatter={(value) => [`${value.toLocaleString('vi-VN')} VND`, '']} />
           <Legend />
           {type === 'monthly' ? (
@@ -27,6 +36,8 @@ export default function ExpenseChart({ data, type = 'monthly' }: ExpenseChartPro
               <Bar dataKey="expenses" name="Chi tiêu" fill="#f87171" />
               <Bar dataKey="profit" name="Lợi nhuận" fill="#60a5fa" />
             </>
+          ) : type === 'daily' ? (
+            <Bar dataKey="amount" name="Chi tiêu" fill="#8884d8" />
           ) : (
             <Bar dataKey="amount" name="Chi tiêu" fill="#8884d8" />
           )}

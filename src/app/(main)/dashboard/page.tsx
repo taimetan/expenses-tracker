@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import ProtectedRoute from "@/src/components/ProtectedRoute";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { getExpenses } from "@/src/services/expenseService";
@@ -19,6 +19,10 @@ import {
   endOfMonth,
   isWithinInterval,
   parseISO,
+  addMonths,
+  startOfYear,
+  endOfYear,
+  subDays,
 } from "date-fns";
 import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
 import DashboardSidebar from "@/src/components/dashboard/DashboardSidebar";
@@ -67,7 +71,6 @@ export default function DashboardPage() {
 
   const fetchMonthlyData = async () => {
     try {
-      setLoading(true);
       const months = Array.from({ length: 6 }, (_, i) => {
         const date = subMonths(new Date(), i);
         return {
@@ -75,57 +78,70 @@ export default function DashboardPage() {
           end: endOfMonth(date),
           name: format(date, "MM/yyyy"),
         };
-      });
+      }).reverse();
 
-      console.log('Months to fetch:', months);
-
-      const [expenses, incomes] = await Promise.all([
+      const [expensesData, incomesData] = await Promise.all([
         getExpenses(user!.uid),
         getIncomes(user!.uid),
       ]);
 
-      console.log('Fetched data:', { expenses, incomes });
-
       const data = months.map((month) => {
-        const monthlyExpenses = expenses
-          .filter(
-            (e) =>
-              new Date(e.date) >= month.start && new Date(e.date) <= month.end
-          )
+        const monthlyExpenses = expensesData
+          .filter((e) => {
+            const expenseDate = parseISO(e.date);
+            return isWithinInterval(expenseDate, { 
+              start: month.start, 
+              end: month.end 
+            });
+          })
           .reduce((sum, e) => sum + e.amount, 0);
 
-        const monthlyIncome = incomes
-          .filter(
-            (i) =>
-              new Date(i.date) >= month.start && new Date(i.date) <= month.end
-          )
+        const monthlyIncome = incomesData
+          .filter((i) => {
+            const incomeDate = parseISO(i.date);
+            return isWithinInterval(incomeDate, { 
+              start: month.start, 
+              end: month.end 
+            });
+          })
           .reduce((sum, i) => sum + i.amount, 0);
 
-        const monthData = {
+        return {
           month: month.name,
           income: monthlyIncome,
           expenses: monthlyExpenses,
           profit: monthlyIncome - monthlyExpenses,
         };
-
-        console.log(`Data for month ${month.name}:`, monthData);
-        return monthData;
       });
 
-      console.log('Final monthly data:', data);
       setMonthlyData(data);
     } catch (error) {
-      console.error('Error in fetchMonthlyData:', error);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching monthly data:", error);
     }
   };
 
   const handleExport = async () => {
-    await exportToExcel(
-      filterExpensesByTimeRange(expenses, timeRange),
-      `bao-cao-chi-tieu-${format(new Date(), "yyyy-MM-dd")}`
-    );
+    try {
+      // Chuẩn bị dữ liệu xuất Excel
+      const exportData = expensesByDay.map(item => ({
+        'Ngày': item.name,
+        'Chi tiêu': item.amount
+      }));
+
+      // Thêm dòng tổng cộng
+      const total = expensesByDay.reduce((sum, item) => sum + item.amount, 0);
+      exportData.push({
+        'Ngày': 'Tổng cộng',
+        'Chi tiêu': total
+      });
+
+      await exportToExcel(
+        exportData,
+        `chi-tieu-hang-ngay-${format(currentMonth, "MM-yyyy")}`
+      );
+    } catch (error) {
+      console.error("Error exporting data:", error);
+    }
   };
 
   const filterExpensesByTimeRange = (
@@ -166,14 +182,26 @@ export default function DashboardPage() {
     (timeRange === "week" ? 7 : timeRange === "month" ? 30 : 365);
   const transactionCount = filteredExpenses.length;
 
-  const expensesByCategory = categories
-    .map((category) => {
-      const amount = filteredExpenses
-        .filter((expense) => expense.category === category)
-        .reduce((sum, expense) => sum + expense.amount, 0);
-      return { category, amount };
-    })
-    .filter((item) => item.amount > 0);
+  // Group expenses by day
+  const expensesByDay = useMemo(() => {
+    const dailyExpenses = new Map<string, number>();
+    
+    filteredExpenses.forEach((expense) => {
+      const day = format(parseISO(expense.date), 'dd/MM');
+      const currentAmount = dailyExpenses.get(day) || 0;
+      dailyExpenses.set(day, currentAmount + expense.amount);
+    });
+
+    // Convert to array and sort by date
+    return Array.from(dailyExpenses.entries())
+      .map(([day, amount]) => ({ name: day, amount }))
+      .sort((a, b) => {
+        const [dayA, monthA] = a.name.split('/').map(Number);
+        const [dayB, monthB] = b.name.split('/').map(Number);
+        if (monthA !== monthB) return monthA - monthB;
+        return dayA - dayB;
+      });
+  }, [filteredExpenses]);
 
   const budgetAlerts = budgets.map((budget) => {
     const categoryExpenses = filteredExpenses
@@ -216,9 +244,8 @@ export default function DashboardPage() {
           />
 
           <DashboardCharts
-            monthlyData={monthlyData}
-            expensesByCategory={expensesByCategory}
-            handleExport={handleExport}
+            expensesByDay={expensesByDay}
+            onExport={handleExport}
           />
 
           <DashboardBudgets budgetAlerts={budgetAlerts} />
@@ -231,24 +258,4 @@ export default function DashboardPage() {
       </div>
     </ProtectedRoute>
   );
-}
-
-function addMonths(date: Date, months: number) {
-  const newDate = new Date(date);
-  newDate.setMonth(newDate.getMonth() + months);
-  return newDate;
-}
-
-function startOfYear(date: Date) {
-  return new Date(date.getFullYear(), 0, 1);
-}
-
-function endOfYear(date: Date) {
-  return new Date(date.getFullYear(), 11, 31);
-}
-
-function subDays(date: Date, days: number) {
-  const newDate = new Date(date);
-  newDate.setDate(newDate.getDate() - days);
-  return newDate;
 }

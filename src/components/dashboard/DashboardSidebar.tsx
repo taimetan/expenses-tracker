@@ -1,6 +1,7 @@
 'use client';
 
-import { FaChartBar } from 'react-icons/fa';
+import { FaChartBar, FaCalendarAlt, FaFilter, FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface DashboardSidebarProps {
   isSidebarOpen: boolean;
@@ -19,82 +20,245 @@ export default function DashboardSidebar({
   currentMonth,
   changeMonth,
 }: DashboardSidebarProps) {
+  // Mobile sidebar animation variants
+  const sidebarVariants = {
+    open: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30
+      }
+    },
+    closed: {
+      x: "-100%",
+      opacity: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30
+      }
+    }
+  };
+
   return (
-    <aside
-      className={`${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-      md:translate-x-0 transform transition-transform duration-200 ease-in-out
-      fixed md:static inset-y-0 left-0 w-64 bg-white shadow-md z-50 md:z-auto`}
-    >
-      <div className="text-gray-600 p-4 flex flex-col h-auto">
-        {/* Nút đóng sidebar trên mobile */}
-        <div className="md:hidden flex justify-end mb-4">
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            className="p-1 rounded-full hover:bg-gray-200"
-          >
-            &times;
-          </button>
-        </div>
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-80 bg-white border-r border-gray-100 flex-col min-h-[calc(100vh-4rem)]">
+        <div className="flex flex-col flex-grow overflow-y-auto">
+          {/* Header */}
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <FaChartBar className="text-white text-xl" />
+              </div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
+                Dashboard
+              </h1>
+            </div>
+          </div>
 
-        {/* Tiêu đề */}
-        <div className="flex items-center mb-8">
-          <FaChartBar className="text-indigo-600 mr-2" />
-          <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
-        </div>
+          {/* Content */}
+          <div className="p-6 space-y-8">
+            {/* Time Controls */}
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2 text-gray-800">
+                <FaCalendarAlt className="text-indigo-500" />
+                <h2 className="font-semibold">Thời gian</h2>
+              </div>
+              <div className="bg-gray-50 p-3 rounded-xl">
+                <div className="flex items-center justify-between bg-white shadow-sm rounded-lg p-2">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => changeMonth(-1)}
+                    className="p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                  >
+                    <FaChevronLeft className="w-4 h-4" />
+                  </motion.button>
+                  <span className="font-medium text-gray-700">
+                    {currentMonth.toLocaleDateString("vi-VN", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => changeMonth(1)}
+                    className="p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                  >
+                    <FaChevronRight className="w-4 h-4" />
+                  </motion.button>
+                </div>
+              </div>
+            </div>
 
-        {/* Điều khiển thời gian */}
-        <div className="mb-6">
-          <h2 className="text-sm font-semibold text-gray-500 mb-2">
-            THỜI GIAN
-          </h2>
-          <div className="flex items-center justify-between bg-gray-100 p-2 rounded-lg">
-            <button
-              onClick={() => changeMonth(-1)}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              &lt;
-            </button>
-            <span className="font-medium">
-              {currentMonth.toLocaleDateString("vi-VN", {
-                month: "long",
-                year: "numeric",
-              })}
-            </span>
-            <button
-              onClick={() => changeMonth(1)}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              &gt;
-            </button>
+            {/* Time Range Filter */}
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2 text-gray-800">
+                <FaFilter className="text-indigo-500" />
+                <h2 className="font-semibold">Phạm vi</h2>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { value: "week", label: "Tuần này" },
+                  { value: "month", label: "Tháng này" },
+                  { value: "year", label: "Năm này" }
+                ].map((range) => (
+                  <motion.button
+                    key={range.value}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setTimeRange(range.value as "week" | "month" | "year")}
+                    className={`
+                      w-full px-4 py-3 rounded-xl flex items-center justify-between
+                      transition-all duration-200 group
+                      ${timeRange === range.value
+                        ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md"
+                        : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                      }
+                    `}
+                  >
+                    <span className="font-medium">{range.label}</span>
+                    {timeRange === range.value && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-2 h-2 rounded-full bg-white"
+                      />
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
+      </aside>
 
-        {/* Bộ lọc thời gian */}
-        <div className="mb-6">
-          <h2 className="text-sm font-semibold text-gray-500 mb-2">
-            PHẠM VI
-          </h2>
-          <div className="space-y-2">
-            {["week", "month", "year"].map((range) => (
-              <button
-                key={range}
-                onClick={() => setTimeRange(range as "week" | "month" | "year")}
-                className={`w-full px-4 py-2 text-left rounded-lg ${
-                  timeRange === range
-                    ? "bg-indigo-100 text-indigo-600"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                {range === "week"
-                  ? "Tuần này"
-                  : range === "month"
-                  ? "Tháng này"
-                  : "Năm này"}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </aside>
+      {/* Mobile Sidebar */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSidebarOpen(false)}
+              className="md:hidden fixed inset-0 bg-black/20 z-40"
+            />
+            
+            {/* Sidebar */}
+            <motion.aside
+              initial="closed"
+              animate="open"
+              exit="closed"
+              variants={sidebarVariants}
+              className="md:hidden fixed inset-y-0 left-0 w-80 bg-white shadow-lg z-50 flex flex-col"
+            >
+              <div className="flex flex-col flex-grow overflow-y-auto">
+                {/* Header */}
+                <div className="p-6 border-b border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <FaChartBar className="text-white text-xl" />
+                      </div>
+                      <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
+                        Dashboard
+                      </h1>
+                    </div>
+                    <button
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
+                    >
+                      <FaTimes className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Content - Reuse the same content as desktop */}
+                <div className="p-6 space-y-8">
+                  {/* Time Controls */}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-gray-800">
+                      <FaCalendarAlt className="text-indigo-500" />
+                      <h2 className="font-semibold">Thời gian</h2>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-xl">
+                      <div className="flex items-center justify-between bg-white shadow-sm rounded-lg p-2">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => changeMonth(-1)}
+                          className="p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                        >
+                          <FaChevronLeft className="w-4 h-4" />
+                        </motion.button>
+                        <span className="font-medium text-gray-700">
+                          {currentMonth.toLocaleDateString("vi-VN", {
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </span>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => changeMonth(1)}
+                          className="p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                        >
+                          <FaChevronRight className="w-4 h-4" />
+                        </motion.button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Time Range Filter */}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-gray-800">
+                      <FaFilter className="text-indigo-500" />
+                      <h2 className="font-semibold">Phạm vi</h2>
+                    </div>
+                    <div className="space-y-2">
+                      {[
+                        { value: "week", label: "Tuần này" },
+                        { value: "month", label: "Tháng này" },
+                        { value: "year", label: "Năm này" }
+                      ].map((range) => (
+                        <motion.button
+                          key={range.value}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setTimeRange(range.value as "week" | "month" | "year")}
+                          className={`
+                            w-full px-4 py-3 rounded-xl flex items-center justify-between
+                            transition-all duration-200 group
+                            ${timeRange === range.value
+                              ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md"
+                              : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                            }
+                          `}
+                        >
+                          <span className="font-medium">{range.label}</span>
+                          {timeRange === range.value && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="w-2 h-2 rounded-full bg-white"
+                            />
+                          )}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 } 

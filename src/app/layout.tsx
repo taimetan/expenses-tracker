@@ -22,7 +22,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <Navigation />
-          {children}
+          <div className="pt-16">
+            {children}
+          </div>
           <Toaster position="top-right" />
         </AuthProvider>
       </body>
